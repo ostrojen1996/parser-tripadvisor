@@ -90,8 +90,16 @@
         console.log(this.newLineChar);
         console.log(this.actions.join(this.newLineChar + this.newLineChar));
     }
-    error(err){
-        this.fs.writeFileSync('./error.log', new Date().toLocaleString() + ': ' +err);
+    error(err) {
+        console.error(err);
+        require('fs').appendFile(
+            './error.log',
+            new Date().toLocaleString() + ' : ' + err + require('os').EOL,
+            'utf8',
+            (appendError) => {
+                if (appendError) throw appendError;
+            }
+        );
     }
     save(email) {
         if (this.savedEmail.hasOwnProperty(email) === false) {
