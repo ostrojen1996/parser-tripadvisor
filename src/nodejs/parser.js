@@ -176,9 +176,41 @@
             })
             .catch(this.error);
     }
+    isFirstPage(url) {
+        return !/\w-oa\d+-\w/.test(url);
+    }
+    parseFirstPage(url) {
+        return this.request(new URL(url))
+            .then(async (citiesHtml) => {
+                let title = citiesHtml.match(/<title>(?<title>.{2,200})<\/title>/).groups.title;
+                if (process.platform == 'win32') {
+                    process.title = title;
+                } else {
+                    process.stdout.write(
+                        String.fromCharCode(27) + "]0;" + title + String.fromCharCode(7)
+                    );
+                }
+                let cities = citiesHtml.matchAll(/href="(?<href>\/Restaurants-g[\d]+-[\w]+\.html)">(?<name>.{1,60})<\/a/g);
+                debugger;
+                for (let city of cities) {
+                    await this.parseCity(city.groups);
+                    this.checkedCity++;
+                }
+                let nextPageUrl = citiesHtml.match(/href="(?<href>\/Restaurants-g\d+-oa\d+-[\w_-]+\.html#LOCATION_LIST)" class="nav next/);
+                if (nextPageUrl) {
+                    await this.parsePagesCountry(this.config.protocol + this.config.domain + nextPageUrl.groups.href);
+                }
+            })
+            .catch(this.error);
+    }
     run() {
         process.stdout.write('\x1Bc');
-        this.parsePagesCountry(this.config.startLink);
+        let startLink = this.config.startLink;
+        if (this.isFirstPage(startLink)) {
+            this.parseFirstPage(startLink);
+        } else {
+            this.parsePagesCountry(startLink);
+        }
     }
 }
 
