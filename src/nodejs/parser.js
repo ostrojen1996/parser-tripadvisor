@@ -58,6 +58,7 @@
         let upTimeHours = Math.floor(upTimeMinute / 60);
         let upTimeString = '';
         if (upTimeHours) {
+            upTimeSeconds -= upTimeHours * 3600;
             upTimeMinute -= upTimeHours * 60;
             upTimeString += upTimeHours + 'hours ';
         }
